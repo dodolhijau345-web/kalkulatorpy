@@ -40,8 +40,7 @@ def reset_data():
 init_db()
 
 # JAM REALTIME DI HEADER
-wib = datetime.utcnow() + timedelta(hours=7)
-hari_ini_str = wib.strftime('%Y-%m-%d')
+jam_sekarang = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
 st.title("🧺 JABUFI LAUNDRY")
 st.caption(f"Kp. Pulo | 🕒 {jam_sekarang}")
 st.divider()
