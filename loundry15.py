@@ -74,6 +74,7 @@ if not df.empty:
     total_semua = df['total'].sum()
     wib = datetime.utcnow() + timedelta(hours=7)
     hari_ini_str = wib.strftime('%Y-%m-%d')
+
     total_hari_ini = df[df['waktu'].str.contains(hari_ini_str)]['total'].sum()
     c1, c2 = st.columns(2)
     c1.metric("💰 Hari Ini", f"Rp {total_hari_ini:,.0f}")
