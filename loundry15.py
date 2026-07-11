@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime,timedelta
 import pandas as pd
 import sqlite3
 import urllib.parse
@@ -40,7 +40,8 @@ def reset_data():
 init_db()
 
 # JAM REALTIME DI HEADER
-jam_sekarang = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+wib = datetime.utcnow() + timedelta(hours=7)
+hari_ini_str = wib.strftime('%Y-%m-%d')
 st.title("🧺 JABUFI LAUNDRY")
 st.caption(f"Kp. Pulo | 🕒 {jam_sekarang}")
 st.divider()
@@ -58,7 +59,7 @@ st.write(f"**Total: Rp {total:,.0f}**")
 if st.button("🧺 SIMPAN & BUAT STRUK"):
     if nama and no_wa:
         nota = f"JF{datetime.now().strftime('%d%m%H%M%S')}"
-        waktu = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        waktu = wib.strftime('%d-%m-%Y %H:%M:%S')
         data = (waktu, nota, nama, no_wa, layanan, kg, total)
         tambah_transaksi(data)
         st.success(f"Nota {nota} tersimpan di Brankas!")
@@ -72,7 +73,8 @@ df = ambil_semua_data()
 
 if not df.empty:
     total_semua = df['total'].sum()
-    hari_ini_str = datetime.now().strftime('%d-%m-%Y')
+    wib = datetime.utcnow() + timedelta(hours=7)
+    hari_ini_str = wib.strftime('%Y-%m-%d')
     total_hari_ini = df[df['waktu'].str.contains(hari_ini_str)]['total'].sum()
     c1, c2 = st.columns(2)
     c1.metric("💰 Hari Ini", f"Rp {total_hari_ini:,.0f}")
