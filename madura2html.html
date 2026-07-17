@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#dc3545">
+<title>Kasir Warung Manual</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+  body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+  .box { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+  h2 { text-align: center; color: #dc3545; }
+  .install-btn { background:#007bff; color:white; border:none; padding:10px; border-radius:5px; width:100%; margin-bottom:15px; display:none; }
+  .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+  input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+  .btn-tambah { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+  table { width: 100%; margin-top: 15px; border-collapse: collapse; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background: #007bff; color: white; }
+  .btn-hapus { background: #dc3545; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
+  .total-box { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: right; }
+  .total { font-size: 28px; color: #dc3545; font-weight: bold; }
+  .bayar-box { display: flex; gap: 10px; margin-top: 10px; }
+  .kembalian { font-size: 20px; color: #28a745; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <button id="installBtn" class="install-btn">📲 INSTALL KE LAYAR DEPAN</button>
+  <h2>🛒 KASIR WARUNG MADURA</h2>
+
+  <!-- INPUT MANUAL -->
+  <div class="input-group">
+    <input type="text" id="namaBarang" placeholder="Nama Barang: Rokok, Kopi, Gula...">
+    <input type="number" id="hargaBarang" placeholder="Harga Rp">
+    <button class="btn-tambah" onclick="tambahBarang()">+ TAMBAH</button>
+  </div>
+
+  <!-- TABEL TRANSAKSI -->
+  <table id="tabel">
+    <tr><th>No</th><th>Nama Barang</th><th>Harga</th><th>Aksi</th></tr>
+  </table>
+
+  <!-- TOTAL & BAYAR -->
+  <div class="total-box">
+    <h3>TOTAL: Rp <span class="total" id="total">0</span></h3>
+    <div class="bayar-box">
+      <input type="number" id="uangBayar" placeholder="Uang Bayar" oninput="hitungKembalian()">
+      <div>Kembalian: Rp <span class="kembalian" id="kembalian">0</span></div>
+    </div>
+    <button class="btn-tambah" style="width:100%; margin-top:10px; background:#007bff;" onclick="reset()">RESET TRANSAKSI</button>
+  </div>
+</div>
+
+<script>
+let data = [];
+
+function tambahBarang(){
+  let nama = document.getElementById('namaBarang').value;
+  let harga = document.getElementById('hargaBarang').value;
+  
+  if(!nama || !harga){ alert('Isi Nama dan Harga dulu'); return; }
+  
+  data.push({nama: nama, harga: parseInt(harga)});
+  document.getElementById('namaBarang').value = '';
+  document.getElementById('hargaBarang').value = '';
+  document.getElementById('namaBarang').focus();
+  tampilkan();
+}
+
+function hapus(index){
+  data.splice(index, 1);
+  tampilkan();
+}
+
+function tampilkan(){
+  let tabel = document.getElementById('tabel');
+  let total = 0;
+  
+  tabel.innerHTML = '<tr><th>No</th><th>Nama Barang</th><th>Harga</th><th>Aksi</th></tr>';
+  
+  data.forEach((d, i) => {
+    total += d.harga;
+    tabel.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${d.nama}</td>
+        <td>Rp ${d.harga.toLocaleString('id-ID')}</td>
+        <td><button class="btn-hapus" onclick="hapus(${i})">Hapus</button></td>
+      </tr>
+    `;
+  });
+  
+  document.getElementById('total').innerText = total.toLocaleString('id-ID');
+  hitungKembalian();
+}
+
+function hitungKembalian(){
+  let total = data.reduce((sum, d) => sum + d.harga, 0);
+  let bayar = parseInt(document.getElementById('uangBayar').value) || 0;
+  document.getElementById('kembalian').innerText = (bayar - total).toLocaleString('id-ID');
+}
+
+function reset(){
+  if(confirm('Mulai transaksi baru?')){
+    data = [];
+    document.getElementById('uangBayar').value = '';
+    tampilkan();
+  }
+}
+
+document.getElementById('hargaBarang').addEventListener('keypress', function(e){
+  if(e.key === 'Enter') tambahBarang();
+});
+
+// ===== KODE PWA =====
+// 1. Tombol Install
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+installBtn.addEventListener('click', () => {
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { installBtn.style.display = 'none'; });
+});
+
+// 2. Daftarin Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
